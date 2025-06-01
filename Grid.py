@@ -1,5 +1,5 @@
 import tkinter as tk
-from tools import validate_entry
+from GUI_tools import validate_entry
 
 class Grid:
     def __init__(self, root):
@@ -13,7 +13,8 @@ class Grid:
         self.grid_frame.pack(expand=True, fill="both")
 
         self.cells = []
-        self.create_grid() # fills self.cells
+        self.create_grid() # sets up the cells of the grid and adds them to self.cells
+        self.initialise_grid() # places the initial digits in the grid, ensuring they cannot be changed
 
     """Creates a blank sudoku grid, adding the entry boxes to the 2D array self.cells
     """
@@ -28,8 +29,8 @@ class Grid:
                 # Creates a cell that you can enter text into
                 cell = tk.Entry(self.grid_frame, justify="center", 
                                 font=("Arial", 20), bd=1, insertontime=0,
-                                validate="key", validatecommand=(valid, "%P"))
-
+                                validate="key", validatecommand=(valid, "%P")
+                                )
                 # Adds the cell to the grid, visually dividing them into 9 3x3 squares
                 left = 1 if x % 3 == 0 else 0
                 top = 1 if y % 3 == 0 else 0
@@ -65,6 +66,16 @@ class Grid:
             new_x = min(8, x+1)
         self.cells[new_y][new_x].focus_set()
 
+
+    def initialise_grid(self):
+        with open("puzzle1.txt") as puzzle:
+            for y, row in enumerate(puzzle):
+                for x, digit in enumerate(row):
+                    if digit in "123456789":
+                        self.cells[y][x].configure(validate="none")
+                        self.cells[y][x].insert(0, " " + digit + " ")
+                        self.cells[y][x].configure(validate="key")
+        
 
 if __name__ == "__main__":
     root = tk.Tk()
