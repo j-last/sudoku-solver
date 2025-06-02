@@ -1,5 +1,5 @@
 import tkinter as tk
-from Solvers import backtracking_solver
+from Solvers import backtracking_solver, simulated_annealing_solver
 
 class SudokuGame:
     def __init__(self, root:tk.Tk):
@@ -42,13 +42,14 @@ class SudokuGame:
                 left = 2 if x % 3 == 0 else 0
                 top = 2 if y % 3 == 0 else 0
                 cell.grid(row=y, column=x, sticky="nsew", padx=(left, 0), pady=(top, 0))
-
+                
                 # Allows for the arrows to move between grid
                 cell.bind("<Up>", lambda e, x=x, y=y: self.change_focus(x, y-1))
                 cell.bind("<Down>", lambda e, x=x, y=y: self.change_focus(x, y+1))
                 cell.bind("<Left>", lambda e, x=x, y=y: self.change_focus(x-1, y))
                 cell.bind("<Right>", lambda e, x=x, y=y: self.change_focus(x+1, y))
-                cell.bind("s", lambda e: backtracking_solver(self, 2))
+                cell.bind("b", lambda e: backtracking_solver(self, 2))
+                cell.bind("s", lambda e: simulated_annealing_solver(self, 2))
                 row.append(cell)
 
             self.__grid.append(row)
@@ -71,7 +72,7 @@ class SudokuGame:
                 if x == new_x or y == new_y:
                     self.__grid[y][x].configure(background="#ffd59e")
                     highlighted = True
-                if self.get_cell(new_x, new_y) != "" and self.get_cell(x, y) == self.get_cell(new_x, new_y):
+                if self.get_cell_value(new_x, new_y) != "" and self.get_cell_value(x, y) == self.get_cell_value(new_x, new_y):
                     self.__grid[y][x].configure(background="#a9e5e5")
                     highlighted = True
                 if not highlighted:
@@ -97,7 +98,7 @@ class SudokuGame:
                         self.__grid[y][x].configure(validatecommand=(valid, "%P"), font=("Arial", 20, "bold"))
     
 
-    def get_cell(self, x:int, y:int) -> str:
+    def get_cell_value(self, x:int, y:int) -> str:
         """Returns the value of a given cell in the grid.
 
         Args:
@@ -105,6 +106,19 @@ class SudokuGame:
             y (int): The y-coord of the cell.
         """
         return self.__grid[y][x].get()
+    
+
+    def is_editable(self, x:int, y:int) -> bool:
+        """Returns True if the cell specified is editable, False otherwise.
+        If x or y are not 0-8 (inclusive) then False is also returned.
+
+        Args:
+            x (int): The x-coord of the cell.
+            y (int): The y-coord of the cell.
+        """
+        if not (0 <= x < 9 and 0 <= y < 9):
+            return False
+        return self.__grid[y][x]["font"][-4:] != "bold"
 
 
     def change_cell(self, x:int, y:int, new_value:str):
@@ -119,7 +133,11 @@ class SudokuGame:
         self.__grid[y][x].delete(0, tk.END)
         self.__grid[y][x].insert(0, new_value)
         self.change_focus(x, y)
+        
+    
+    def update_screen(self):
         self.__root.update()
+
     
 
     def get_row(self, y:int) -> set[str]:
@@ -146,7 +164,7 @@ class SudokuGame:
         return values
     
 
-    def get_box(self, x:int, y:int) -> set[str]:
+    def get_3x3box(self, x:int, y:int) -> set[str]:
         """Returns all values in the same 3x3 box in the grid as the cell given.
 
         Args:
@@ -171,7 +189,7 @@ class SudokuGame:
             y (int): The y-coord of the cell.
         """
         NUMS = set(["1", "2", "3", "4", "5", "6", "7", "8", "9"])
-        return NUMS - self.get_col(x) - self.get_row(y) - self.get_box(x, y)
+        return NUMS - self.get_col(x) - self.get_row(y) - self.get_3x3box(x, y)
 
 
 if __name__ == "__main__":

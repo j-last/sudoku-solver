@@ -1,8 +1,9 @@
 from time import sleep
-from SudokuGame import SudokuGame
-from random import random
+#from SudokuGame import SudokuGame
+from random import random, randint, choice
+from math import inf, exp
 
-def backtracking_solver(grid:SudokuGame, speed:int):
+def backtracking_solver(grid, speed:int):
     """Solves the sudoku using backtracking, displaying the steps to the user.
 
     Args:
@@ -40,5 +41,64 @@ def backtracking_solver(grid:SudokuGame, speed:int):
     delay = 0.1 / speed
     solve(0, 0)
 
+
+def simulated_annealing_solver(grid, speed:int):
+    """Solves the sudoku using simulated annealing, displaying the swaps made to the user.
+
+    Args:
+        grid (SudokuGame): The game of sudoku to be solved.
+        speed (int): The speed at which the algorithm is ran.
+    """
+    NUMS = set(["1", "2", "3", "4", "5", "6", "7", "8", "9"])
+    iters = 0
+    temp = 16
+    MIN_TEMP = 0.001
+    DECREASE_FACTOR = 0.999
+    for y in range(9):
+        for x in range(9):
+            if grid.get_cell_value(x, y) == "":
+                grid.change_cell(x, y, choice(list(NUMS - grid.get_3x3box(x, y))))
+
+    prev_score = get_score(grid)
+    while prev_score != 0:
+        # Selects any two editable cells in the same 3x3 box
+        valid = False
+        while not valid:
+            x1, y1 = randint(0, 8), randint(0, 8)
+            x2, y2 = randint(x1-x1%3, x1-x1%3+2), randint(y1-y1%3, y1-y1%3+2)
+            valid = grid.is_editable(x1, y1) and grid.is_editable(x2, y2) and (x1, y1) != (x2, y2)
+
+        val1, val2 = grid.get_cell_value(x1, y1), grid.get_cell_value(x2, y2)
+        grid.change_cell(x1, y1, val2)
+        grid.change_cell(x2, y2, val1)
+
+        new_score = get_score(grid)
+
+        if new_score < prev_score:
+            grid.update_screen()
+            prev_score = new_score
+        elif exp(new_score - prev_score)/temp < random():
+            grid.update_screen()
+            prev_score = new_score
+        else:
+            grid.change_cell(x1, y1, val1)
+            grid.change_cell(x2, y2, val2)
+        if prev_score == 0:
+            break
+        iters += 1
+        temp *= DECREASE_FACTOR
+
+
+def get_score(grid) -> int:
+    score = 0
+    for i in range(9):
+        score += 9 - len(grid.get_row(i))
+        score += 9 - len(grid.get_col(i))
+    return score
+        
+        
+
+        
+        
 
 
