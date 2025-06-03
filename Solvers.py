@@ -1,7 +1,7 @@
 from time import sleep
 #from SudokuGame import SudokuGame
 from random import random, randint, choice
-from math import inf, exp
+from math import exp
 
 def backtracking_solver(grid, speed:int):
     """Solves the sudoku using backtracking, displaying the steps to the user.
@@ -51,16 +51,16 @@ def simulated_annealing_solver(grid, speed:int):
     """
     NUMS = set(["1", "2", "3", "4", "5", "6", "7", "8", "9"])
     iters = 0
-    temp = 16
-    MIN_TEMP = 0.001
-    DECREASE_FACTOR = 0.999
+    temp = 3
+    MIN_TEMP = 0.1
+    DECREASE_FACTOR = 0.999999
     for y in range(9):
         for x in range(9):
             if grid.get_cell_value(x, y) == "":
                 grid.change_cell(x, y, choice(list(NUMS - grid.get_3x3box(x, y))))
 
     prev_score = get_score(grid)
-    while prev_score != 0:
+    while temp > MIN_TEMP:
         # Selects any two editable cells in the same 3x3 box
         valid = False
         while not valid:
@@ -84,6 +84,7 @@ def simulated_annealing_solver(grid, speed:int):
             grid.change_cell(x1, y1, val1)
             grid.change_cell(x2, y2, val2)
         if prev_score == 0:
+            print(iters)
             break
         iters += 1
         temp *= DECREASE_FACTOR
