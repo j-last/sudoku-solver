@@ -1,6 +1,9 @@
 from random import random, randint, choice
 from math import exp
 
+"""
+Dummy code I used to try and optimise the simulated annealing process.
+Not used as part of the SudokuGame code."""
 
 def simulated_annealing_solver(grid, initialTemp, decrease_factor):
     NUMS = set(["1", "2", "3", "4", "5", "6", "7", "8", "9"])

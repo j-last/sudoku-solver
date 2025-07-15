@@ -24,21 +24,21 @@ class SudokuGame:
 
 
     def create_grid(self):
-        """Creates the cells of the grid, and adds them to the window and self.grid. 
+        """Creates the cells of the grid, and adds them to the window and the self.__grid array. 
         """
         valid = self.__root.register(lambda value: len(value) <= 1 and value in "123456789")
         for y in range(9):
-            # Allows the rows and colums to grow in size
+            # Allows the rows and colums to grow in size.
             self.__grid_frame.rowconfigure(y, weight=1)
             self.__grid_frame.columnconfigure(y, weight=1)
             row = []
             for x in range(9):
-                # Creates a cell that you can enter text into
+                # Creates a cell that you can enter text into.
                 cell = tk.Entry(self.__grid_frame, justify="center", 
                                 font=("Arial", 20), insertontime=0,
                                 validate="key", validatecommand=(valid, "%P"), 
                                 relief="raised")
-                # Adds the cell to the grid, visually dividing them into 9 3x3 squares using padding
+                # Adds the cell to the grid, visually dividing them into 9 3x3 squares using padding.
                 left = 2 if x % 3 == 0 else 0
                 top = 2 if y % 3 == 0 else 0
                 cell.grid(row=y, column=x, sticky="nsew", padx=(left, 0), pady=(top, 0))
@@ -48,8 +48,8 @@ class SudokuGame:
                 cell.bind("<Down>", lambda e, x=x, y=y: self.change_focus(x, y+1))
                 cell.bind("<Left>", lambda e, x=x, y=y: self.change_focus(x-1, y))
                 cell.bind("<Right>", lambda e, x=x, y=y: self.change_focus(x+1, y))
-                cell.bind("b", lambda e: backtracking_solver(self, 2))
-                cell.bind("s", lambda e: simulated_annealing_solver(self, 2))
+                cell.bind("b", lambda e: backtracking_solver(self, 0.05))
+                cell.bind("s", lambda e: simulated_annealing_solver(self))
                 row.append(cell)
 
             self.__grid.append(row)
@@ -69,14 +69,19 @@ class SudokuGame:
         for y in range(9):
             for x in range(9):
                 highlighted = False
+                # Highlights the cells different colours depending on where they are in relation to the current cell.
+                # Same row or column
                 if x == new_x or y == new_y:
                     self.__grid[y][x].configure(background="#ffd59e")
                     highlighted = True
+                # Same value (not including empty cells)
                 if self.get_cell_value(new_x, new_y) != "" and self.get_cell_value(x, y) == self.get_cell_value(new_x, new_y):
                     self.__grid[y][x].configure(background="#a9e5e5")
                     highlighted = True
+                # Default colour
                 if not highlighted:
                     self.__grid[y][x].configure(background="#fff9d8")
+        # Currently focussed cell
         self.__grid[new_y][new_x].configure(background="#b2ebe0")
         self.__grid[new_y][new_x].focus_set()
 
